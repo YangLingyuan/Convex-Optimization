@@ -23,7 +23,7 @@ for k=1:4
             projected=Zp;
             break;
         end
-    end
+    
     
     %if z violate 2 constraints and both foot of the
     %perpendicular is not within the feasible set, choose the
@@ -31,7 +31,7 @@ for k=1:4
     if(num_active==2)
         
         z1=(b(Index_active(2))-b(Index_active(1)))/(A(Index_active(2),1)/A(Index_active(2),2)-A(Index_active(1),1)/A(Index_active(1),2));
-        z2=-A(Index_active(1),1)/A(Index_active(1),2)*z1+b(Index_active(1));
+        z2=-A(Index_active(1),1)/A(Index_active(1),2)*z1-sign(A(Index_active(1),2))*b(Index_active(1));
         projected=[z1,z2]';
         break;
     end
@@ -47,6 +47,7 @@ for k=1:4
                 break;
             end
         end
+    end
     end
 end
 
