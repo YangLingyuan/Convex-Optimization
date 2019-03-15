@@ -10,11 +10,9 @@ for k=1:4
         Index_active(num_active)=k;
         
         %find the food of perpendicular
-        syms X Y
-        EQ1=A(k,1)*(Y-z(2))-A(k,2)*(X-z(1));
-        EQ2=A(k,1)*X+A(k,2)*Y+b(1);
-        [Xp,Yp]=solve(EQ1,EQ2,'X','Y');
-        Zp=[double(Xp),double(Yp)]';
+        Xp=(A(k,2)*A(k,2)*z(1)-A(k,2)*A(k,1)*z(2)-A(k,1)*b(k))/(A(k,2)*A(k,2)+A(k,1)*A(k,1));
+        Yp=(-A(k,2)*A(k,1)*z(1)+A(k,1)*A(k,1)*z(2)-A(k,2)*b(k))/(A(k,2)*A(k,2)+A(k,1)*A(k,1));
+        Zp=[Xp,Yp]';
         
         %check if the foot is feasible
         if((A(1,:)*Zp+b(1)>=0)&&(A(2,:)*Zp+b(2)>=0)&&(A(3,:)*Zp+b(3)>=0)&&(A(4,:)*Zp+b(4)>=0))
@@ -30,7 +28,7 @@ for k=1:4
     %intersection point as optimal
     if(num_active==2)
         
-        z1=(b(Index_active(2))-b(Index_active(1)))/(A(Index_active(2),1)/A(Index_active(2),2)-A(Index_active(1),1)/A(Index_active(1),2));
+        z1=(-sign(A(Index_active(2),2))*b(Index_active(2))--sign(A(Index_active(1),2))*b(Index_active(1)))/(A(Index_active(2),1)/A(Index_active(2),2)-A(Index_active(1),1)/A(Index_active(1),2));
         z2=-A(Index_active(1),1)/A(Index_active(1),2)*z1-sign(A(Index_active(1),2))*b(Index_active(1));
         projected=[z1,z2]';
         break;
@@ -41,8 +39,8 @@ for k=1:4
     if(k==4 && num_active==1)
         for j=1:4
             if(A(j,:)*Zp+b(j)<0)
-                z1=(b(j)-b(Index_active(1)))/(A(j,1)/A(j,2)-A(Index_active(1),1)/A(Index_active(1),2));
-                z2=-A(Index_active(1),1)/A(Index_active(1),2)*z1+b(Index_active(1));
+                z1=(-sign(A(j,2))*b(j)--sign(A(Index_active(1),2))*b(Index_active(1)))/(A(j,1)/A(j,2)-A(Index_active(1),1)/A(Index_active(1),2));
+                z2=-A(Index_active(1),1)/A(Index_active(1),2)*z1+-sign(A(Index_active(1),2))*b(Index_active(1));
                 projected=[z1,z2]';
                 break;
             end

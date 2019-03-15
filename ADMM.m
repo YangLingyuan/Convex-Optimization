@@ -3,30 +3,30 @@ clear;
 [X,Y]=meshgrid(-10:0.1:10);
 
 %QP problem specification
-Xref=[1,4];
+Xref=[-2,-2];
 P=[1,0;0,1];
 q=[-2*Xref(1),-2*Xref(2)]';
 r=Xref(1)^2+Xref(2)^2;
 %inequality constraint
 %to keep the form Ax+b>0
 A1=[1,-1];
-b1=1;
+b1=2;
 A2=[-1,1];
-b2=1;
+b2=2;
 A3=[-1,-1];
-b3=1;
+b3=2;
 A4=[1,1];
-b4=1;
+b4=2;
 A=[A1;A2;A3;A4];
 b=[b1;b2;b3;b4];
 %updating variables
 %x_init=[-3,5]';
-x_new=[-3,5]';
+x_new=Xref';
 u_new=[0,0]';
 z_new=[0,0]';
 Max_Iterate=1000;
 rho=1;
-ABSTOL= 1e-4;
+ABSTOL= sqrt(2)*1e-4;
 RELTOL= 1e-2;
 
 %ploting related
@@ -48,21 +48,20 @@ hold on;
 plot(X(1,:),Y_c1,X(1,:),Y_c2,X(1,:),Y_c3,X(1,:),Y_c4);
 axis([-10 10 -10 10]);
 hold on;
-
+tic
 for k=1:Max_Iterate
     
     
     %x-update
     if k>1
-        x_new=R\(R'\(rho*(z_new-u_new)-q));
+        x_new=R\(rho*(z_new-u_new)-q);
     else
-        R=chol(P+rho*eye(size(P,1)));
-        x_new=R\(R'\(rho*(z_new-u_new)-q));
+        R=P+rho*eye(size(P,1));
+        x_new=R\(rho*(z_new-u_new)-q);
     end
     
     %z-update
     z_old=z_new;
-    to_be_projected=x_new+u_new;
     z_new=func_projection(x_new+u_new,A,b);
     
     %u-update
@@ -79,11 +78,12 @@ for k=1:Max_Iterate
     hold on;
     
     %termination check
-    r_norm(k)=norm(x_new-z_new);
-    s_norm(k)=norm(-rho*(z_new-z_old));
-    eps_pri(k) = sqrt(2)*ABSTOL + RELTOL*max(norm(x_new), norm(-z_new));
-    eps_dual(k)= sqrt(2)*ABSTOL + RELTOL*norm(rho*u_new);
-    if(r_norm(k)<eps_pri(k) && s_norm(k)<eps_dual(k))
+    primal_residual=norm(x_new-z_new);
+    dual_residual=norm(-rho*(z_new-z_old));
+    eps_pri= ABSTOL + RELTOL*max(norm(x_new), norm(-z_new));
+    eps_dual= ABSTOL + RELTOL*norm(rho*u_new);
+    if(primal_residual<eps_pri && dual_residual<eps_dual)
         break;
     end
 end
+toc
