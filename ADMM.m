@@ -3,7 +3,7 @@ clear;
 [X,Y]=meshgrid(-10:0.1:10);
 
 %QP problem specification
-Xref=[-2,-2];
+Xref=[-2,-2.5];
 P=[1,0;0,1];
 q=[-2*Xref(1),-2*Xref(2)]';
 r=Xref(1)^2+Xref(2)^2;
@@ -22,8 +22,8 @@ b=[b1;b2;b3;b4];
 %updating variables
 %x_init=[-3,5]';
 x_new=Xref';
-u_new=[0,0]';
-z_new=[0,0]';
+u_new=zeros(size(A,1),1);
+z_new=zeros(size(A,1),1);
 Max_Iterate=1000;
 rho=1;
 ABSTOL= sqrt(2)*1e-4;
@@ -48,24 +48,21 @@ hold on;
 plot(X(1,:),Y_c1,X(1,:),Y_c2,X(1,:),Y_c3,X(1,:),Y_c4);
 axis([-10 10 -10 10]);
 hold on;
+N = -(P + rho*(A'*A));
+N2 = N\(rho*A');
+N1 = N\(q - rho*A'*b);
 tic
 for k=1:Max_Iterate
     
-    
     %x-update
-    if k>1
-        x_new=R\(rho*(z_new-u_new)-q);
-    else
-        R=P+rho*eye(size(P,1));
-        x_new=R\(rho*(z_new-u_new)-q);
-    end
-    
+    x_new=N1 + N2*(z_new + u_new);
     %z-update
     z_old=z_new;
-    z_new=func_projection(x_new+u_new,A,b);
+    z_new = max(0, -A*x_new - u_new + b);
+    %z_new=func_projection(x_new+u_new,A,b);
     
     %u-update
-    u_new=u_new+x_new-z_new;
+    u_new=u_new+(A*x_new - b + z_new);
     
     %cost function
     %f(k+1)=x_new'*P*x_new + q'*x_new + r;
@@ -78,7 +75,7 @@ for k=1:Max_Iterate
     hold on;
     
     %termination check
-    primal_residual=norm(x_new-z_new);
+    primal_residual=norm(A*x_new - b + z_new);
     dual_residual=norm(-rho*(z_new-z_old));
     eps_pri= ABSTOL + RELTOL*max(norm(x_new), norm(-z_new));
     eps_dual= ABSTOL + RELTOL*norm(rho*u_new);
