@@ -3,9 +3,9 @@ clear;
 [X,Y]=meshgrid(-10:0.1:10);
 
 %QP problem specification
-Xref=[-2,-2.5];
+Xref=[1,1];
 P=[1,0;0,1];
-q=[-2*Xref(1),-2*Xref(2)]';
+q=[-Xref(1),-Xref(2)]';
 r=Xref(1)^2+Xref(2)^2;
 %inequality constraint
 %to keep the form Ax+b>0
